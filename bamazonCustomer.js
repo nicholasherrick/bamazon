@@ -55,13 +55,13 @@ function chooseProduct(){
                 connection.end();
                 return;
             }else{
-                buyProduct(input.askId);
+                orderProduct(input.askId);
             }
         });
     });
 }
 
-function buyProduct(id){
+function orderProduct(id){
     connection.query("SELECT * FROM products WHERE item_id = ?", [id], function(err, results){
         if(err) throw err;
         inquirer.prompt({
@@ -70,14 +70,45 @@ function buyProduct(id){
             message: "You've selected " + results[0].product_name + " for " + results[0].price + ". Is that correct?"
         }).then(function(input){
             if(input.doublecheck === true){
-                return;
+                return true;
             }else{
                 displayItems();
             }
         }).then(function(){
-            console.log("This Worked!");
-        })
+            var numbers = /^[0-9]+$/;
+            inquirer.prompt({
+                name: "quantity",
+                type: "input",
+                message: "How many " + results[0].product_name + " would you like to purchase?",
+                validate: function(answer){
+                    if(answer.match(numbers)){
+                        return true;
+                    }else{
+                        return "Please enter a number";
+                    }
+                }
+            }).then(function(answer){
+                checkStock(results[0].item_id, answer.quantity);
+            });
+        });
     });
+}
+
+function checkStock(id, quantity){
+    connection.query("SELECT * FROM products WHERE item_id = ?", [id], function(err, results){
+        if(err) throw err;
+        if(quantity > results[0].stock_quantity){
+            console.log("Insufficient quantity!");
+            orderProduct(id);
+        }else{
+            buyProduct();
+        }
+    });
+}
+
+function buyProduct(){
+    // buy product code here
+    console.log("hello");
 }
 
 connection.connect(function(err){
