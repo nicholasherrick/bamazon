@@ -29,7 +29,7 @@ function displayItems(){
     function(err, results){
         if(err) throw err;
         for(var i = 0; i < results.length; i++){
-            console.log("----------\nItem ID: " + results[i].item_id + "\nItem Name: " + results[i].product_name + "\nItem Cost: $" + results[i].price + "\n----------");
+            console.log("----------\nItem ID: " + results[i].item_id + "\nDepartment: " + results[i].department_name + "\nItem Name: " +  results[i].product_name + "\nItem Cost: $" + results[i].price + "\n----------");
         }
         chooseProduct();
     });
@@ -67,7 +67,7 @@ function buyProduct(id){
         inquirer.prompt({
             name: "doublecheck",
             type: "confirm",
-            message: "You've selected " + results[0].product_name + ". Is that correct?"
+            message: "You've selected " + results[0].product_name + " for " + results[0].price + ". Is that correct?"
         }).then(function(input){
             if(input.doublecheck === true){
                 return;
