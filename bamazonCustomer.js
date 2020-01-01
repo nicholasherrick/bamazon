@@ -62,12 +62,12 @@ function chooseProduct(){
                     choices.push(results[i].item_id)
                 }
                 // Adds an option to exit to the list
-                choices.push("exit");
+                choices.push("Exit");
                 return choices;
             }
         }).then(function(input){
             // If the user picks exit, the connection is terminated
-            if(input.askId === "exit"){
+            if(input.askId === "Exit"){
                 connection.end();
                 return;
                 // When a product is chosen, pass the ID of the chosen item to the order product function
@@ -152,7 +152,7 @@ function buyProduct(id, quantity, totalCost){
     // Pulls the item's stock quantity from the database in order to calculate the newly remaing stock after purchase
     connection.query("SELECT * FROM products WHERE item_id = ?", [id], function(err, results){
         if(err) throw err;
-        var remainingStock = results[0].stock_quantity - quantity;
+        var remainingStock = parseFloat(results[0].stock_quantity) - parseFloat(quantity);
         // Tells the database the new remaining stock
         connection.query("UPDATE products SET? WHERE ?", [
             {stock_quantity: remainingStock},
