@@ -11,3 +11,5 @@ Values ("airpods", "electronics", 149.99, 30),
 ("xbox", "electronics", 399.99, 15),
 ("seeds", "gardening", 9.99, 100),
 ("goldfish", "pet", 24.99, 33)
+
+SELECT * FROM products;

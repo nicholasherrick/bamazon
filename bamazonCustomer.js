@@ -97,18 +97,47 @@ function orderProduct(id){
 function checkStock(id, quantity){
     connection.query("SELECT * FROM products WHERE item_id = ?", [id], function(err, results){
         if(err) throw err;
+        var totalCost = results[0].price * quantity;
         if(quantity > results[0].stock_quantity){
             console.log("Insufficient quantity!");
             orderProduct(id);
         }else{
-            buyProduct();
+            inquirer.prompt({
+                name: "cost",
+                type: "confirm",
+                message: "Your total is " + totalCost + " would you like to continue?"
+            }).then(function(input){
+                if(input.cost === true){
+                    buyProduct(id, quantity);
+                }else{
+                    displayItems();
+                }
+            });
         }
     });
 }
 
-function buyProduct(){
-    // buy product code here
-    console.log("hello");
+function buyProduct(id, quantity){
+    connection.query("SELECT * FROM products WHERE item_id = ?", [id], function(err, results){
+        if(err) throw err;
+        var remainingStock = results[0].stock_quantity - quantity;
+        connection.query("UPDATE products SET? WHERE ?", [
+            {stock_quantity: remainingStock},
+            {item_id: id}
+        ]);
+    });
+    console.log("Your item(s) have been purchased!");
+    inquirer.prompt({
+        name: "buyAgain",
+        type: "confirm",
+        message: "Would you like to continue shopping?"
+    }).then(function(input){
+        if(input.buyAgain === true){
+            displayItems();
+        }else{
+            connection.end();
+        }
+    });
 }
 
 connection.connect(function(err){
