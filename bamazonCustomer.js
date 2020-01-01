@@ -21,7 +21,9 @@ function begin(){
             console.log("Goodbye!");
             connection.end();
         }
-    })
+    }).catch(err => {
+        if(err) throw err;
+    });
 }
 
 function displayItems(){
@@ -57,6 +59,8 @@ function chooseProduct(){
             }else{
                 orderProduct(input.askId);
             }
+        }).catch(err => {
+            if(err) throw err;
         });
     });
 }
@@ -89,6 +93,8 @@ function orderProduct(id){
                 }
             }).then(function(answer){
                 checkStock(results[0].item_id, answer.quantity);
+            }).catch(err => {
+                if(err) throw err;
             });
         });
     });
@@ -105,19 +111,21 @@ function checkStock(id, quantity){
             inquirer.prompt({
                 name: "cost",
                 type: "confirm",
-                message: "Your total is " + totalCost + " would you like to continue?"
+                message: "Your total is " + totalCost + " would you like to purchase?"
             }).then(function(input){
                 if(input.cost === true){
-                    buyProduct(id, quantity);
+                    buyProduct(id, quantity, totalCost);
                 }else{
                     displayItems();
                 }
+            }).catch(err => {
+                if(err) throw err;
             });
         }
     });
 }
 
-function buyProduct(id, quantity){
+function buyProduct(id, quantity, totalCost){
     connection.query("SELECT * FROM products WHERE item_id = ?", [id], function(err, results){
         if(err) throw err;
         var remainingStock = results[0].stock_quantity - quantity;
@@ -126,7 +134,7 @@ function buyProduct(id, quantity){
             {item_id: id}
         ]);
     });
-    console.log("Your item(s) have been purchased!");
+    console.log("Your item(s) have been purchased for " + totalCost);
     inquirer.prompt({
         name: "buyAgain",
         type: "confirm",
@@ -137,6 +145,8 @@ function buyProduct(id, quantity){
         }else{
             connection.end();
         }
+    }).catch(err => {
+        if(err) throw err;
     });
 }
 
