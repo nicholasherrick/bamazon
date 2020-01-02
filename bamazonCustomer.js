@@ -8,7 +8,7 @@ var connection = mysql.createConnection({
     port: 3306,
     user: "root",
     // Put your mysql password here:
-    password: "password",
+    password: "",
     database: "bamazon"
 });
 
@@ -81,7 +81,7 @@ function orderProduct(id){
             message: "You've selected " + results[0].product_name + " for " + results[0].price + ". Is that correct?",
             validate: function(input){
                 if(input === false){
-                    displayItems();
+                    chooseProduct();
                 }
             }
         },
@@ -125,7 +125,7 @@ function checkStock(id, quantity){
                     // Passes product ID, confirmed quantity, and order cost to the buy product funtion
                     buyProduct(id, quantity, totalCost);
                 }else{
-                    displayItems();
+                    chooseProduct();
                 }
             }).catch(err => {
                 if(err) throw err;
@@ -155,7 +155,7 @@ function buyProduct(id, quantity, totalCost){
         message: "Would you like to continue shopping?"
     }).then(function(input){
         if(input.buyAgain === true){
-            displayItems();
+            chooseProduct();
         }else{
             connection.end();
         }
