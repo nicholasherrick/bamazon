@@ -16,7 +16,7 @@ function begin() {
         name: "menu",
         type: "list",
         message: "Welcome to the Manager Menu",
-        choices: ["View Products for Sale", sep, "View Low Inventory", sep, "Add to Inventory", sep, "Add New Product", sep, "Exit"]
+        choices: ["View Products for Sale", sep, "View Low Inventory", sep, "Add to Inventory", sep, "Add New Product", sep, "Exit", sep]
     }).then(function (input) {
         switch (input.menu) {
             case "View Products for Sale":
@@ -136,6 +136,7 @@ function restock(id) {
 
 function addProduct() {
     var numbers = /^[0-9]+$/;
+    var currency = /^\d+\.?\d{0,2}?$/;
     inquirer.prompt([
         {
             name: "name",
@@ -164,7 +165,15 @@ function addProduct() {
         {
             name: "cost",
             type: "input",
-            message: "Please enter the price for this item"
+            message: "Please enter the price for this item",
+            validate: function(input){
+                if(currency.test(input)){
+                    return true;
+                }else{
+                    console.log("Please enter a valid dollar amount");
+                    return false;
+                }
+            }
         },
         {
             name: "quantity",
