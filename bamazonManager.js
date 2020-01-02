@@ -170,7 +170,7 @@ function addProduct() {
                 if(currency.test(input)){
                     return true;
                 }else{
-                    console.log("Please enter a valid dollar amount");
+                    console.log("\nPlease enter a valid dollar amount");
                     return false;
                 }
             }
