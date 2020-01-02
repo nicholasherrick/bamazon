@@ -8,7 +8,7 @@ var connection = mysql.createConnection({
     port: 3306,
     user: "root",
     // Put your mysql password here:
-    password: "",
+    password: "password",
     database: "bamazon"
 });
 
@@ -20,7 +20,7 @@ function begin(){
         message: "Welcome to the Store Front! Would you like to view what's for sale?"
     }).then(function(input){
         if (input.welcome === true){
-            displayItems();
+            chooseProduct();
         }else{
             console.log("Goodbye!");
             // Terminates the database connection
@@ -32,34 +32,22 @@ function begin(){
     });
 }
 
-// Logs all items for sale in the terminal
-function displayItems(){
-    // Looks for the correct table in the mysql database
-    connection.query("SELECT * FROM products",
-    function(err, results){
-        // Looks for any errors with mysql and shows the error if any occured
-        if(err) throw err;
-        // Loops through all our data from the mysql table
-        for(var i = 0; i < results.length; i++){
-            console.log("----------\nItem ID: " + results[i].item_id + "\nDepartment: " + results[i].department_name + "\nItem Name: " +  results[i].product_name + "\nItem Cost: $" + results[i].price + "\n----------");
-        }
-        chooseProduct();
-    });
-}
-
 // Asks the user which product they would like to buy
 function chooseProduct(){
+    // Grabs data from the database
     connection.query("SELECT * FROM products", function(err, results){
+        // If there is an error with retrieving the data, the error will be displayed
         if(err) throw err;
         inquirer.prompt({
             name: "askId",
             type: "list",
-            message: "Please select the ID of the product you would like to buy",
+            message: "Please select the product you would like to buy",
             // Makes a new array using the product IDs and then allows the user to select which product they would like
             choices: function(){
                 var choices = new Array();
                 for(var i = 0; i <results.length; i++){
-                    choices.push(results[i].item_id)
+                    var data = results[i];
+                    choices.push("ID: " + data.item_id + " | Product: " + data.product_name + " | Price: " + data.price);
                 }
                 // Adds an option to exit to the list
                 choices.push("Exit");
@@ -84,38 +72,37 @@ function chooseProduct(){
 function orderProduct(id){
     connection.query("SELECT * FROM products WHERE item_id = ?", [id], function(err, results){
         if(err) throw err;
-        inquirer.prompt({
+        // Variable for checking an input for numbers only validation
+        var numbers = /^[0-9]+$/;
+        inquirer.prompt([
+        {
             name: "doublecheck",
             type: "confirm",
-            message: "You've selected " + results[0].product_name + " for " + results[0].price + ". Is that correct?"
-        }).then(function(input){
-            if(input.doublecheck === true){
-                return true;
-            }else{
-                // Sends the user back to the product display function if they want to change items or exit
-                displayItems();
-            }
-        }).then(function(){
-            // Variable for checking an input for numbers only validation
-            var numbers = /^[0-9]+$/;
-            inquirer.prompt({
-                name: "quantity",
-                type: "input",
-                message: "How many " + results[0].product_name + " would you like to purchase?",
-                validate: function(answer){
-                    // Validates that the user has entered a number
-                    if(answer.match(numbers)){
-                        return true;
-                    }else{
-                        return "Please enter a number";
-                    }
+            message: "You've selected " + results[0].product_name + " for " + results[0].price + ". Is that correct?",
+            validate: function(input){
+                if(input === false){
+                    displayItems();
                 }
-            }).then(function(answer){
-                // Passes the product ID and quantity to the check stock function
-                checkStock(results[0].item_id, answer.quantity);
-            }).catch(err => {
-                if(err) throw err;
-            });
+            }
+        },
+        {
+            name: "quantity",
+            type: "input",
+            message: "How many " + results[0].product_name + " would you like to purchase?",
+            validate: function(input){
+                // Validates that the user has entered a number
+                if(input.match(numbers)){
+                    return true;
+                }else{
+                    return "Please enter a number";
+                }
+            }
+        }
+        ]).then(function(input){
+            // Passes the product ID and quantity to the check stock function
+            checkStock(results[0].item_id, input.quantity);
+        }).catch(err => {
+            if(err) throw err;
         });
     });
 }
