@@ -8,7 +8,7 @@ var connection = mysql.createConnection({
     port: 3306,
     user: "root",
     // Put your mysql password here:
-    password: "",
+    password: "password",
     database: "bamazon"
 });
 
@@ -60,7 +60,9 @@ function chooseProduct(){
                 return;
                 // When a product is chosen, pass the ID of the chosen item to the order product function
             }else{
-                orderProduct(input.askId);
+                var productId = input.askId.split(" ");
+                console.log(productId[1]);
+                orderProduct(productId[1]);
             }
         }).catch(err => {
             if(err) throw err;
@@ -74,36 +76,39 @@ function orderProduct(id){
         if(err) throw err;
         // Variable for checking an input for numbers only validation
         var numbers = /^[0-9]+$/;
-        inquirer.prompt([
-        {
+        inquirer.prompt({
             name: "doublecheck",
             type: "confirm",
             message: "You've selected " + results[0].product_name + " for " + results[0].price + ". Is that correct?",
-            validate: function(input){
-                if(input === false){
-                    chooseProduct();
-                }
+        }).then(function(input){
+            if(input.doublecheck === true){
+                getQuantity();
+            }else{
+                chooseProduct();
             }
-        },
-        {
-            name: "quantity",
-            type: "input",
-            message: "How many " + results[0].product_name + " would you like to purchase?",
-            validate: function(input){
-                // Validates that the user has entered a number
-                if(input.match(numbers)){
-                    return true;
-                }else{
-                    return "Please enter a number";
-                }
-            }
-        }
-        ]).then(function(input){
-            // Passes the product ID and quantity to the check stock function
-            checkStock(results[0].item_id, input.quantity);
         }).catch(err => {
             if(err) throw err;
         });
+        function getQuantity(){
+            inquirer.prompt({
+                name: "quantity",
+                type: "input",
+                message: "How many " + results[0].product_name + " would you like to purchase?",
+                validate: function(input){
+                    // Validates that the user has entered a number
+                    if(input.match(numbers)){
+                        return true;
+                    }else{
+                        return "Please enter a number";
+                    }
+                }
+            }).then(function(input){
+                // Passes the product ID and quantity to the check stock function
+                checkStock(results[0].item_id, input.quantity);
+            }).catch(err => {
+                if(err) throw err;
+            });
+        }
     });
 }
 
