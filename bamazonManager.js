@@ -11,11 +11,12 @@ var connection = mysql.createConnection({
 });
 
 function begin() {
+    var sep = new inquirer.Separator();
     inquirer.prompt({
         name: "menu",
         type: "list",
         message: "Welcome to the Manager Menu",
-        choices: ["View Products for Sale", new inquirer.Separator(), "View Low Inventory", new inquirer.Separator(), "Add to Inventory", new inquirer.Separator(), "Add New Product", new inquirer.Separator(), "Exit"]
+        choices: ["View Products for Sale", sep, "View Low Inventory", sep, "Add to Inventory", sep, "Add New Product", sep, "Exit"]
     }).then(function (input) {
         switch (input.menu) {
             case "View Products for Sale":
