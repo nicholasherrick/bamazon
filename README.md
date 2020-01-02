@@ -1,6 +1,6 @@
 # bamazon Amazon StoreFront
 
-![Screenshot](/assets/screenshot.png)
+![Screenshot](/assets/images/screenshot.png)
 
 ## About
 
