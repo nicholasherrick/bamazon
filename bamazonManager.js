@@ -1,7 +1,7 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 
-var connection = mysql.createConnection({
+const connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
     user: "root",
@@ -66,26 +66,25 @@ function addInventory() {
     connection.query("SELECT * FROM products",
         function (err, results) {
             if (err) throw err;
-            for (var i = 0; i < results.length; i++) {
-                console.log("----------\nItem ID: " + results[i].item_id + "\nDepartment: " + results[i].department_name + "\nItem Name: " + results[i].product_name + "\nItem Cost: $" + results[i].price + "\nItem Quantity: " + results[i].stock_quantity + "\n----------");
-            }
             inquirer.prompt({
                 name: "pickItem",
                 type: "list",
                 message: "Please pick an item to add inventory",
                 choices: function () {
-                    var choices = new Array();
+                    var choices = [];
                     for (var i = 0; i < results.length; i++) {
-                        choices.push(results[i].item_id)
+                        var data = results[i];
+                        choices.push("ID: " + data.item_id + " | Product: " + data.product_name + " | Department: " + data.department_name + " | Price: " + data.price + " | Quantity: " + data.stock_quantity);
                     }
-                    choices.push("Exit");
+                    choices.push(" Exit");
                     return choices;
                 }
             }).then(function (input) {
-                if (input.pickItem === "Exit") {
+                if (input.pickItem === " Exit") {
                     begin();
                 } else {
-                    restock(input.pickItem);
+                    var productId = input.pickItem.split(" ");
+                    restock(productId[1]);
                 }
             }).catch(err => {
                 if (err) throw err;
@@ -97,15 +96,24 @@ function restock(id) {
     connection.query("SELECT * FROM products WHERE item_id = ?", [id],
         function (err, results) {
             if (err) throw err;
+            var numbers = /^[0-9]+$/;
             inquirer.prompt({
                 name: "add",
                 type: "input",
-                message: "How many " + results[0].product_name + " would you like to add to inventory? type 'cancel' to return to main menu"
+                message: "How many " + results[0].product_name + " would you like to add to inventory? type 'cancel' to return to main menu",
+                validate: function(input){
+                    if(input === "cancel"){
+                        return true;
+                    }else if(input.match(numbers)){
+                        return true;
+                    }else{
+                        return "Please enter a valid input";
+                    }
+                }
             }).then(function (input) {
-                var numbers = /^[0-9]+$/;
                 if (input.add === "cancel") {
                     begin();
-                } else if (input.add.match(numbers)) {
+                }else{
                     var newQuantity = parseFloat(results[0].stock_quantity) + parseFloat(input.add);
                     connection.query("UPDATE products SET? WHERE ?", [
                         { stock_quantity: newQuantity },
@@ -124,9 +132,6 @@ function restock(id) {
                     }).catch(err => {
                         if (err) throw err;
                     });
-                } else {
-                    console.log("Please enter a valid input");
-                    return;
                 }
             }).catch(err => {
                 if (err) throw err;

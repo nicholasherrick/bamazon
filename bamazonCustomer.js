@@ -3,7 +3,7 @@ const mysql = require("mysql");
 const inquirer = require("inquirer");
 
 // Create connection to mysql Database
-var connection = mysql.createConnection({
+const connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
     user: "root",
@@ -50,18 +50,17 @@ function chooseProduct(){
                     choices.push("ID: " + data.item_id + " | Product: " + data.product_name + " | Price: " + data.price);
                 }
                 // Adds an option to exit to the list
-                choices.push("Exit");
+                choices.push(" Exit");
                 return choices;
             }
         }).then(function(input){
             // If the user picks exit, the connection is terminated
-            if(input.askId === "Exit"){
+            if(input.askId === " Exit"){
                 connection.end();
                 return;
                 // When a product is chosen, pass the ID of the chosen item to the order product function
             }else{
                 var productId = input.askId.split(" ");
-                console.log(productId[1]);
                 orderProduct(productId[1]);
             }
         }).catch(err => {
